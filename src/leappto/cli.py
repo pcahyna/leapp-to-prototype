@@ -8,6 +8,9 @@ import os.path
 from subprocess import Popen, PIPE, check_output, CalledProcessError
 import sys
 
+from wowp.actors import FuncActor, DictionaryMerge
+
+
 def main():
     if getuid() != 0:
         print("Please run me as root")
@@ -120,6 +123,58 @@ def main():
                     'systemctl start httpd mariadb"'
             return self._fix_container(fixer)
 
+    def initparam(source, target):
+        lmp = LibvirtMachineProvider()
+        machines = lmp.get_machines()
+
+        machine_src = _find_machine(machines, source)
+        machine_dst = _find_machine(machines, target)
+
+        if not machine_dst or not machine_src:
+            print("Machines are not ready:")
+            print("Source: " + repr(machine_src))
+            print("Target: " + repr(machine_dst))
+            exit(-1)
+
+
+        print('! configuring SSH keys')
+        ip = machine_dst.ip[0]
+        target_ssh_config = [
+                '-o User=vagrant',
+                '-o StrictHostKeyChecking=no',
+                '-o PasswordAuthentication=no',
+                '-o IdentityFile=' + parsed.identity,
+        ]
+
+        return (ip, target_ssh_config, machine_src.disks[0].host_path, machine_src.installation.os.version)
+
+    def forwports(forwarded_ports_param):
+        if forwarded_ports_param is None:
+            forwarded_ports = [(80, 80)] # Default to forwarding plain HTTP
+        else:
+            forwarded_ports = list(forwarded_ports_param)
+        forwarded_ports.append((9022, 22)) # Always forward SSH
+        return forwarded_ports
+
+    def sshbase_helper(target, target_cfg):
+        return ['ssh'] + target_cfg + ['-4', target]
+
+    def ssh_helper(target, target_cfg, cmd, **kwargs):
+        arg = sshbase_helper(target, target_cfg) + [cmd]
+        return Popen(arg, **kwargs).wait()
+
+
+    initparam_actor=FuncActor(initparam, outports=('ip', 'target_cfg', 'disk', 'srcver'))
+
+    forwports_actor=FuncActor(forwports, outports=('forwports'))
+
+    sourcegen_actor=FuncActor(lambda disk: ['virt-tar-out', '-a', disk, '/', '-'], outports=('popenarg') )
+
+    createdest_actor=FuncActor(lambda target, target_cfg, srccmd:
+                               ssh_helper(target, target_cfg, 'cat > /opt/leapp-to/container.tar.gz',
+                                          stdin=Popen(srccmd, stdout=PIPE).stdout))
+
+    mcparams_actor=DictionaryMerge(inport_names=("ip", 'target_cfg', 'disk'), outport_name="mcparams")
 
     parsed = ap.parse_args()
     if parsed.action == 'list-machines':
@@ -141,38 +196,49 @@ def main():
 
             print('! looking up "{}" as source and "{}" as target'.format(source, target))
 
-            lmp = LibvirtMachineProvider()
-            machines = lmp.get_machines()
+            #ip, target_cfg, disk, srcver = initparam(source, target)
+            #mc = MigrationContext(ip, target_cfg, disk)
+            print('! copying over')
 
-            machine_src = _find_machine(machines, source)
-            machine_dst = _find_machine(machines, target)
+            sourcegen_actor.inports['disk'] += initparam_actor.outports['disk']
+            mcparams_actor.inports['disk'] += initparam_actor.outports['disk']
 
-            if not machine_dst or not machine_src:
-                print("Machines are not ready:")
-                print("Source: " + repr(machine_src))
-                print("Target: " + repr(machine_dst))
-                exit(-1)
+            createdest_actor.inports['target'] += initparam_actor.outports['ip']
+            mcparams_actor.inports['ip'] += initparam_actor.outports['ip']
 
-            print('! configuring SSH keys')
-            ip = machine_dst.ip[0]
-            target_ssh_config = [
-                '-o User=vagrant',
-                '-o StrictHostKeyChecking=no',
-                '-o PasswordAuthentication=no',
-                '-o IdentityFile=' + parsed.identity,
-            ]
+            createdest_actor.inports['target_cfg'] += initparam_actor.outports['target_cfg']
+            mcparams_actor.inports['target_cfg'] += initparam_actor.outports['target_cfg']
 
+            createdest_actor.inports['srccmd'] += sourcegen_actor.outports['popenarg']
+            copywf=createdest_actor.get_workflow()
+            #copywf.add_outport(initparam_actor.outports['srcver'])
+            #copywf.add_outport(initparam_actor.outports['ip'])
+            #copywf.add_outport(initparam_actor.outports['disk'])
+            #copywf.add_outport(initparam_actor.outports['target_cfg'])
+            print('! copying over')
+            res=copywf(source=source, target=target)
+            srcver=res['srcver'][0]
+            mcparams=res['mcparams'][0]
+
+            print(res)
+
+            #ver=copywf.outports['srcver'].pop()
+            print(srcver)
             mc = MigrationContext(
-                ip,
-                target_ssh_config,
-                machine_src.disks[0].host_path,
+                mcparams["ip"],
+                mcparams['target_cfg'],
+                mcparams['disk'],
                 forwarded_ports
             )
-            print('! copying over')
-            mc.copy()
+            #print(res['ip'][0])
+            #print(res['disk'][0])
+            #print(res['target_cfg'][0])
+
+
+            # mc.copy()
             print('! provisioning ...')
             # if el7 then use systemd
-            if machine_src.installation.os.version.startswith('7'):
+            if srcver.startswith('7'):
                 result = mc.start_container('centos:7', '/usr/lib/systemd/systemd --system')
                 print('! starting services')
                 mc.fix_systemd()
