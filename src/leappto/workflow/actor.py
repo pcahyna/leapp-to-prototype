@@ -109,3 +109,5 @@ class AnnotatedFuncActor(FuncActor):
 class LoadedAnnotatedFuncActor(AnnotatedFuncActor):
     def __init__(self, modname, func, args=(), kwargs={}, name=None):
         annmodule = import_module(modname)
+
+lfa = LoadedAnnotatedFuncActor('leappto.scripts.fooactor', lambda fooin: fooin)
