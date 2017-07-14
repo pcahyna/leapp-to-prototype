@@ -125,3 +125,4 @@ class DirectoryAnnotatedFuncActor(LoadedAnnotatedFuncActor):
         actor_path = os.path.dirname(os.path.abspath(self.annmodule.__file__))
 
 lfa = LoadedAnnotatedFuncActor('leappto.scripts.fooactor', lambda fooin: fooin, outports=('fooout'))
+dfa = DirectoryAnnotatedFuncActor('baractor', lambda fooin: fooin, outports=('fooout'))
