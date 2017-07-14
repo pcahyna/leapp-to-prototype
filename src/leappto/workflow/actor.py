@@ -3,8 +3,10 @@
 from __future__ import print_function
 
 import os
+from importlib import import_module
 from subprocess import Popen
 from wowp.actors import FuncActor
+import leappto.actor_support.portannotation
 
 
 class CheckActor(FuncActor):
@@ -94,3 +96,16 @@ class CheckActor(FuncActor):
     def set_target_cmd(self, target_cmd):
         """ Build command that will be executed on target machine """
         self._target_cmd = target_cmd
+
+class AnnotatedFuncActor(FuncActor):
+    def __init__(self, outports_annotations, inports_annotations, func, args=(), kwargs={}, name=None):
+        super(AnnotatedFuncActor, self).__init__(func, args, kwargs, name=name)
+        for ipn in self.inports.keys():
+            inports[ipn].annotation = inports_annotations[ipn]
+        for opn in self.outports.keys():
+            outports[opn].annotation = outports_annotations[opn]
+
+
+class LoadedAnnotatedFuncActor(AnnotatedFuncActor):
+    def __init__(self, modname, func, args=(), kwargs={}, name=None):
+        annmodule = import_module(modname)
