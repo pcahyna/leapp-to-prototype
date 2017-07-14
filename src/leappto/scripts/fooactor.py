@@ -6,6 +6,6 @@ class FooOutput(object):
 class FooInput(object):
     pass
 
-input_annotations = {'fooin': DstPortAnnotation(FooInput, Any)}
-output_annotations = {'fooout': PortAnnotation(FooOutput)}
+inports_annotations = {'fooin': DstPortAnnotation(FooInput, Any)}
+outports_annotations = {'fooout': PortAnnotation(FooOutput)}
 

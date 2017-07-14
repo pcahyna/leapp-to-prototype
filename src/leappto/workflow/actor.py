@@ -98,16 +98,30 @@ class CheckActor(FuncActor):
         self._target_cmd = target_cmd
 
 class AnnotatedFuncActor(FuncActor):
-    def __init__(self, outports_annotations, inports_annotations, func, args=(), kwargs={}, name=None):
-        super(AnnotatedFuncActor, self).__init__(func, args, kwargs, name=name)
+    def __init__(self, outports_annotations, inports_annotations, func, args=(), kwargs={}, outports=None, inports=None, name=None):
+        super(AnnotatedFuncActor, self).__init__(func, args, kwargs, outports=outports, inports=inports, name=name)
         for ipn in self.inports.keys():
-            inports[ipn].annotation = inports_annotations[ipn]
+            self.inports[ipn].annotation = inports_annotations[ipn]
         for opn in self.outports.keys():
-            outports[opn].annotation = outports_annotations[opn]
+            self.outports[opn].annotation = outports_annotations[opn]
 
 
 class LoadedAnnotatedFuncActor(AnnotatedFuncActor):
-    def __init__(self, modname, func, args=(), kwargs={}, name=None):
-        annmodule = import_module(modname)
+    def __init__(self, modname, func, args=(), kwargs={}, outports=None, inports=None, name=None):
+        self.annmodule = import_module(modname)
+        oa = self.annmodule.__dict__['outports_annotations']
+        ia = self.annmodule.__dict__['inports_annotations']
+        super(LoadedAnnotatedFuncActor, self).__init__(oa, ia, func, args, kwargs, outports=outports, inports=inports, name=name)
 
-lfa = LoadedAnnotatedFuncActor('leappto.scripts.fooactor', lambda fooin: fooin)
+
+class DirectoryAnnotatedFuncActor(LoadedAnnotatedFuncActor):
+
+    ACTOR_PREFIX = 'leappto.scripts.'
+
+    def __init__(self, pkgname, func, args=(), kwargs={}, outports=None, inports=None, name=None):
+        modname = self.ACTOR_PREFIX + pkgname + '.actordecl'
+
+        super(DirectoryAnnotatedFuncActor, self).__init__(modname, func, args, kwargs, outports=outports, inports=inports, name=name)
+        actor_path = os.path.dirname(os.path.abspath(self.annmodule.__file__))
+
+lfa = LoadedAnnotatedFuncActor('leappto.scripts.fooactor', lambda fooin: fooin, outports=('fooout'))
