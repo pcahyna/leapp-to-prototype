@@ -135,7 +135,7 @@ dfa = DirectoryAnnotatedFuncActor('baractor', lambda fooin: fooin, outports=('fo
 
 class DirAnnotatedShellActor(DirectoryAnnotatedFuncActor):
 
-    def __init__(self, pkgname, target_cmd, args=(), kwargs={}, outports=None, inports=None, name=None):
+    def __init__(self, pkgname, target_cmd, script, args=(), kwargs={}, outports=None, inports=None, name=None):
         def allfunc(*inportargs):
             try:
                 preres = self.prefunc(self.inports, inportargs)
@@ -153,6 +153,7 @@ class DirAnnotatedShellActor(DirectoryAnnotatedFuncActor):
         self._target_cmd = target_cmd
         self.prefunc = self._default_prefunc
         self.postfunc = self._default_postfunc
+        self.script = script
  
         super(DirAnnotatedShellActor, self).__init__(pkgname, allfunc, args, kwargs, outports, inports, name)
 
