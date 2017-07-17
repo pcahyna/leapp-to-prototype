@@ -24,7 +24,6 @@ import nmap
 import shlex
 import errno
 import psutil
-import glob
 import yaml
 
 
@@ -779,47 +778,51 @@ def main():
         for name in os.listdir(os.path.join(scripts_path)):
             if os.path.isdir(os.path.join(scripts_path, name)):
                 actor_path = os.path.join(scripts_path, name)
-                for f in glob.glob(os.path.join(actor_path, '*.yaml')):
-                    with open(f, 'r') as stream:
-                        try:
-                            actor = yaml.load(stream)
+                yaml_file = os.path.join(actor_path, 'actordecl.yaml')
 
-                            actor_name = actor['name']
-                            if 'script' in actor:
-                                actor_script = os.path.join(actor_path,
-                                                            actor['script'])
+                if not os.path.isfile(yaml_file):
+                    continue
 
-                                """ FIXME
-                                if 'requires' in actor:
-                                    wf.add_actor(DirAnnotatedShellActor(
-                                        actor_name,
-                                        actor_script,
-                                        inports = actor['requires']
-                                    ))
-                                else:
-                                    wf.add_actor(DirAnnotatedShellActor(
-                                        actor_name,
-                                        actor_script
-                                    ))
-                                """
+                with open(yaml_file, 'r') as stream:
+                    try:
+                        actor = yaml.load(stream)
+                        actor_name = actor['name']
+                        if 'script' in actor:
+                            actor_script = os.path.join(actor_path,
+                                                        actor['script'])
+
+                            """ FIXME
+                            if 'requires' in actor:
+                                wf.add_actor(DirAnnotatedShellActor(
+                                    actor_name,
+                                    actor_script,
+                                    inports = actor['requires']
+                                ))
                             else:
-                                """ FIXME
-                                if 'requires' in actor:
-                                    wf.add_actor(DirAnnotatedFuncActor(
-                                        actor_name,
-                                        actor_script,
-                                        inports = actor['requires']
-                                    ))
-                                else:
-                                    wf.add_actor(DirAnnotatedFuncActor(
-                                        actor_name,
-                                        actor_script
-                                    ))
+                                wf.add_actor(DirAnnotatedShellActor(
+                                    actor_name,
+                                    actor_script
+                                ))
+                            """
+                        else:
+                            pass
+                            """ FIXME
+                            if 'requires' in actor:
+                                wf.add_actor(DirAnnotatedFuncActor(
+                                    actor_name,
+                                    actor_script,
+                                    inports = actor['requires']
+                                ))
+                            else:
+                                wf.add_actor(DirAnnotatedFuncActor(
+                                    actor_name,
+                                    actor_script
+                                ))
 
-                                """
+                            """
 
-                        except yaml.YAMLError as e:
-                            print(e)
+                    except yaml.YAMLError as e:
+                        print(e)
 
         wf.run()
         sys.exit(0)
