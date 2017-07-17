@@ -119,21 +119,21 @@ class LoadedAnnotatedFuncActor(AnnotatedFuncActor):
         super(LoadedAnnotatedFuncActor, self).__init__(oa, ia, func, args, kwargs, outports=outports, inports=inports, name=name)
 
 
-class DirectoryAnnotatedFuncActor(LoadedAnnotatedFuncActor):
+class DirAnnotatedFuncActor(LoadedAnnotatedFuncActor):
 
     ACTOR_PREFIX = 'leappto.scripts.'
 
     def __init__(self, pkgname, func, args=(), kwargs={}, outports=None, inports=None, name=None):
         modname = self.ACTOR_PREFIX + pkgname + '.actordecl'
 
-        super(DirectoryAnnotatedFuncActor, self).__init__(modname, func, args, kwargs, outports=outports, inports=inports, name=name)
+        super(DirAnnotatedFuncActor, self).__init__(modname, func, args, kwargs, outports=outports, inports=inports, name=name)
         actor_path = os.path.dirname(os.path.abspath(self.annmodule.__file__))
 
 lfa = LoadedAnnotatedFuncActor('leappto.scripts.fooactor', lambda fooin: fooin, outports=('fooout'))
-dfa = DirectoryAnnotatedFuncActor('baractor', lambda fooin: fooin, outports=('fooout'))
+dfa = DirAnnotatedFuncActor('baractor', lambda fooin: fooin, outports=('fooout'))
 
 
-class DirAnnotatedShellActor(DirectoryAnnotatedFuncActor):
+class DirAnnotatedShellActor(DirAnnotatedFuncActor):
 
     def __init__(self, pkgname, target_cmd, script, args=(), kwargs={}, outports=None, inports=None, name=None):
         def allfunc(*inportargs):
