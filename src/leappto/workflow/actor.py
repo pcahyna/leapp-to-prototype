@@ -135,7 +135,7 @@ dfa = DirectoryAnnotatedFuncActor('baractor', lambda fooin: fooin, outports=('fo
 
 class DirAnnotatedShellActor(DirectoryAnnotatedFuncActor):
 
-    def __init__(self, pkgname, prefunc, postfunc, target_cmd, args=(), kwargs={}, outports=None, inports=None, name=None):
+    def __init__(self, pkgname, target_cmd, args=(), kwargs={}, outports=None, inports=None, name=None):
         def allfunc(*inportargs):
             try:
                 preres = self.prefunc(self.inports, inportargs)
@@ -151,10 +151,12 @@ class DirAnnotatedShellActor(DirectoryAnnotatedFuncActor):
             return self.postfunc(res)
 
         self._target_cmd = target_cmd
+        self.prefunc = self._default_prefunc
+        self.postfunc = self._default_postfunc
  
         super(DirAnnotatedShellActor, self).__init__(pkgname, allfunc, args, kwargs, outports, inports, name)
 
-    def prefunc(_, inportargs):
+    def _default_prefunc(_, inportargs):
         for a in inportargs:
             if a.errorinfo is not None:
                 raise PrereqError("required actor failed", a.srcname, a.errorinfo)
@@ -169,3 +171,7 @@ class DirAnnotatedShellActor(DirectoryAnnotatedFuncActor):
         child = Popen(self._target_cmd, stdin=script_input, stdout=PIPE, stderr=PIPE)
         out, err = child.communicate()
         return (child.returncode, out, err)
+
+    def _default_postfunc(res):
+        return port.annotation.msgtype(self.name, None, res[0])
+
