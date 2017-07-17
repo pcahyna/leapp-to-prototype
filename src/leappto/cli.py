@@ -15,7 +15,7 @@ from leappto.providers.ssh import SSHMachine
 from leappto.providers.local import LocalMachine
 from leappto.version import __version__
 from leappto.workflow.check import CheckWorkflow
-from leappto.workflow.actor import CheckActor
+from leappto.workflow.actor import CheckActor, DirAnnotatedShellActor
 from sets import Set
 import os
 import sys
@@ -24,7 +24,6 @@ import nmap
 import shlex
 import errno
 import psutil
-import glob
 import yaml
 
 
@@ -776,24 +775,55 @@ def main():
                            user=parsed.user,
                            identity=parsed.identity)
 
-        actors = {}
-        for f in glob.glob(os.path.join(scripts_path, '*.yaml')):
-            with open(f, 'r') as stream:
-                try:
-                    actors = yaml.load(stream)
-                except yaml.YAMLError as e:
-                    print(e)
+        for name in os.listdir(os.path.join(scripts_path)):
+            if os.path.isdir(os.path.join(scripts_path, name)):
+                actor_path = os.path.join(scripts_path, name)
+                yaml_file = os.path.join(actor_path, 'actordecl.yaml')
 
-        for actor in actors['actors']:
-            requires = None
-            if 'requires' in actor:
-                requires = actor['requires']
+                if not os.path.isfile(yaml_file):
+                    continue
 
-            wf.add_actor(CheckActor(check_name=actor['name'],
-                                    check_script=os.path.join(scripts_path,
-                                                              actor['script']),
-                                    output_path=output_path,
-                                    requires=requires))
+                with open(yaml_file, 'r') as stream:
+                    try:
+                        actor = yaml.load(stream)
+                        actor_name = actor['name']
+                        if 'script' in actor:
+                            actor_script = os.path.join(actor_path,
+                                                        actor['script'])
+
+                            """ FIXME
+                            if 'requires' in actor:
+                                wf.add_actor(DirAnnotatedShellActor(
+                                    actor_name,
+                                    actor_script,
+                                    inports = actor['requires']
+                                ))
+                            else:
+                                wf.add_actor(DirAnnotatedShellActor(
+                                    actor_name,
+                                    actor_script
+                                ))
+                            """
+                        else:
+                            pass
+                            """ FIXME
+                            if 'requires' in actor:
+                                wf.add_actor(DirAnnotatedFuncActor(
+                                    actor_name,
+                                    actor_script,
+                                    inports = actor['requires']
+                                ))
+                            else:
+                                wf.add_actor(DirAnnotatedFuncActor(
+                                    actor_name,
+                                    actor_script
+                                ))
+
+                            """
+
+                    except yaml.YAMLError as e:
+                        print(e)
+
         wf.run()
         sys.exit(0)
 
