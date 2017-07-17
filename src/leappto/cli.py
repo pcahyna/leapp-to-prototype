@@ -15,7 +15,7 @@ from leappto.providers.ssh import SSHMachine
 from leappto.providers.local import LocalMachine
 from leappto.version import __version__
 from leappto.workflow.check import CheckWorkflow
-from leappto.workflow.actor import CheckActor
+from leappto.workflow.actor import CheckActor, DirAnnotatedShellActor
 from sets import Set
 import os
 import sys
@@ -784,29 +784,44 @@ def main():
                         try:
                             actor = yaml.load(stream)
 
+                            actor_name = actor['name']
                             if 'script' in actor:
-                                print(actor['name'])
-                                print(os.path.join(actor_path,
-                                                   actor['script']))
+                                actor_script = os.path.join(actor_path,
+                                                            actor['script'])
+
+                                """ FIXME
                                 if 'requires' in actor:
-                                    print(actor['requires'])
+                                    wf.add_actor(DirAnnotatedShellActor(
+                                        actor_name,
+                                        actor_script,
+                                        inports = actor['requires']
+                                    ))
+                                else:
+                                    wf.add_actor(DirAnnotatedShellActor(
+                                        actor_name,
+                                        actor_script
+                                    ))
+                                """
                             else:
-                                print(actor['name'])
-                                print(os.path.join(actor_path,
-                                                   actor['script']))
+                                """ FIXME
                                 if 'requires' in actor:
-                                    print(actor['requires'])
+                                    wf.add_actor(DirAnnotatedFuncActor(
+                                        actor_name,
+                                        actor_script,
+                                        inports = actor['requires']
+                                    ))
+                                else:
+                                    wf.add_actor(DirAnnotatedFuncActor(
+                                        actor_name,
+                                        actor_script
+                                    ))
+
+                                """
 
                         except yaml.YAMLError as e:
                             print(e)
-        """
-        wf.add_actor(CheckActor(check_name=actor['name'],
-                                check_script=os.path.join(scripts_path,
-                                                          actor['script']),
-                                output_path=output_path,
-                                requires=requires))
+
         wf.run()
-        """
         sys.exit(0)
 
     elif parsed.action == 'destroy-container':
