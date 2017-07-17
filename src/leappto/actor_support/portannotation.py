@@ -35,8 +35,18 @@ def matchport(inport, outport):
 class MsgType(object):
     def __init__(self, srcname, errorinfo, payload):
         self.srcname=srcname
+        # errorinfo is an ActorError exception defined below
         self.errorinfo=errorinfo
         self.payload=payload
+
+class ActorError(Exception):
+    def __init__(self, errtype, errmsg, errdetails):
+        # "failed" or "skipped"
+        self.errtype = errtype
+        # what error happened
+        self.errmsg = errmsg
+        # more details: why it happened
+        self.errdetails = errdetails
 
 def connectactors(actors):
     allinports=[p for a in actors for p in a.inports.values()]
