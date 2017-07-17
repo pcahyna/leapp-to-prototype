@@ -1,9 +1,10 @@
 from leappto.actor_support.portannotation import PortAnnotation, DstPortAnnotation, Any
+from leappto.msgtypes.msgtypes import ShellCommandStatus
 
-class FooOutput(object):
+class FooOutput(ShellCommandStatus):
     pass
 
-class FooInput(object):
+class FooInput(ShellCommandStatus):
     pass
 
 inports_annotations = {'fooin': DstPortAnnotation(FooInput, Any)}
