@@ -76,7 +76,8 @@ setup(
     },
 
     # No bundled package data yet
-    package_data={'leappto': ['scripts/*']},
+    package_data={'leappto': ['scripts/*/*.yaml',
+                              'scripts/*/*.sh']},
 
     # Install `leapp-tool` command
     entry_points={
