@@ -64,7 +64,6 @@ setup(
         "psutil==5.2.2",
         "wowp",
         "ipyparallel",
-        "mpi4py",
         "pyyaml",
     ],
 
