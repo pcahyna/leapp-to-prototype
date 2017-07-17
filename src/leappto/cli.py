@@ -776,25 +776,37 @@ def main():
                            user=parsed.user,
                            identity=parsed.identity)
 
-        actors = {}
-        for f in glob.glob(os.path.join(scripts_path, '*.yaml')):
-            with open(f, 'r') as stream:
-                try:
-                    actors = yaml.load(stream)
-                except yaml.YAMLError as e:
-                    print(e)
+        for name in os.listdir(os.path.join(scripts_path)):
+            if os.path.isdir(os.path.join(scripts_path, name)):
+                actor_path = os.path.join(scripts_path, name)
+                for f in glob.glob(os.path.join(actor_path, '*.yaml')):
+                    with open(f, 'r') as stream:
+                        try:
+                            actor = yaml.load(stream)
 
-        for actor in actors['actors']:
-            requires = None
-            if 'requires' in actor:
-                requires = actor['requires']
+                            if 'script' in actor:
+                                print(actor['name'])
+                                print(os.path.join(actor_path,
+                                                   actor['script']))
+                                if 'requires' in actor:
+                                    print(actor['requires'])
+                            else:
+                                print(actor['name'])
+                                print(os.path.join(actor_path,
+                                                   actor['script']))
+                                if 'requires' in actor:
+                                    print(actor['requires'])
 
-            wf.add_actor(CheckActor(check_name=actor['name'],
-                                    check_script=os.path.join(scripts_path,
-                                                              actor['script']),
-                                    output_path=output_path,
-                                    requires=requires))
+                        except yaml.YAMLError as e:
+                            print(e)
+        """
+        wf.add_actor(CheckActor(check_name=actor['name'],
+                                check_script=os.path.join(scripts_path,
+                                                          actor['script']),
+                                output_path=output_path,
+                                requires=requires))
         wf.run()
+        """
         sys.exit(0)
 
     elif parsed.action == 'destroy-container':
