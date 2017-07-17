@@ -7,7 +7,12 @@ from importlib import import_module
 from subprocess import Popen
 from wowp.actors import FuncActor
 import leappto.actor_support.portannotation
+from leappto.actor_support.portannotation import ActorError
 
+class PrereqError(ActorError):
+    def __init__(self, errmsg, prereqname, errdetails):
+        super(PrereqError, self).__init__("skipped", errmsg, errdetails)
+        self.prereqname = prereqname
 
 class CheckActor(FuncActor):
     """ A check actor that can be part of our workflow """
@@ -126,3 +131,41 @@ class DirectoryAnnotatedFuncActor(LoadedAnnotatedFuncActor):
 
 lfa = LoadedAnnotatedFuncActor('leappto.scripts.fooactor', lambda fooin: fooin, outports=('fooout'))
 dfa = DirectoryAnnotatedFuncActor('baractor', lambda fooin: fooin, outports=('fooout'))
+
+
+class DirAnnotatedShellActor(DirectoryAnnotatedFuncActor):
+
+    def __init__(self, pkgname, prefunc, postfunc, target_cmd, args=(), kwargs={}, outports=None, inports=None, name=None):
+        def allfunc(*inportargs):
+            try:
+                preres = self.prefunc(self.inports, inportargs)
+                try:
+                    res = self.execfunc(preres)
+                except Exception as ee:
+                    raise ScriptError("failed", "script execution failed", ee)
+
+            except ActorError as ae:
+                excres = tuple(port.annotation.msgtype(self.name, ae, None) for port in self.outports )
+                return excres
+
+            return self.postfunc(res)
+
+        self._target_cmd = target_cmd
+ 
+        super(DirAnnotatedShellActor, self).__init__(pkgname, allfunc, args, kwargs, outports, inports, name)
+
+    def prefunc(_, inportargs):
+        for a in inportargs:
+            if a.errorinfo is not None:
+                raise PrereqError("required actor failed", a.srcname, a.errorinfo)
+            if a.payload != 0:
+                raise PrereqError("required actor returned a nonzero exit code", a.srcname, a.payload)
+        return ()
+
+    # for now we do not do anything with the input arguments (no way to pass them to the script itself)
+    def execfunc(self, _):
+        """ Method that should be executed by actor"""
+        script_input = open(self.script)
+        child = Popen(self._target_cmd, stdin=script_input, stdout=PIPE, stderr=PIPE)
+        out, err = child.communicate()
+        return (child.returncode, out, err)
