@@ -9,6 +9,15 @@ class Any(object):
     def __init__(self):
         raise Exception('Any cannot be instantiated')
 
+class All(object):
+    """A unique wildcard object
+
+    Note that we cannot use None as this can be used by users
+    """
+
+    def __init__(self):
+        raise Exception('All cannot be instantiated')
+
 class PortAnnotation(object):
     def __init__(self, msgtype):
         self.msgtype = msgtype
@@ -18,6 +27,11 @@ class DstPortAnnotation(PortAnnotation):
     def __init__(self, msgtype, srcname=Any):
         super(DstPortAnnotation, self).__init__(msgtype)
         self.srcname = srcname
+
+#dummy class annotating workflow results
+class FinalPortAnnotation(PortAnnotation):
+    def __init__(self):
+        pass
 
 #class AnnotatedInPort(InPort):
 #    def __init__(self, *args, **kwargs):
@@ -54,12 +68,25 @@ def connectactors(actors):
 
     for ip in allinports:
         opcount = 0
+        if ip.annotation.msgtype==All:
+            ip.annotation.matchports=[]
+
         for op in alloutports:
             if matchport(ip, op):
                 print("matched! ", ip)
                 opcount += 1
-                ip += op
+                if ip.annotation.msgtype==All:
+                    ip.annotation.matchports.append(op)
+                else:
+                    ip += op
                 # we do not want to have more than one output port connected to one input port
                 # break
-        if opcount > 1:
-            print("Warning: input port ", ip, "has {} output ports".format(opcount) )
+        if ip.annotation.msgtype == All:
+            names = [mp.name for mp in ip.annotation.matchports]
+            ip.annotation.linkedactor = DictionaryMerge(inport_names=names, outport_name='out')
+            ip += ip.annotation.linkedactor.outports['out']
+            for mp in ip.annotation.matchports:
+                ip.annotation.linkedactor.inports[mp.name] += mp
+        else:
+            if opcount > 1:
+                print("Warning: input port ", ip, "has {} output ports".format(opcount) )
