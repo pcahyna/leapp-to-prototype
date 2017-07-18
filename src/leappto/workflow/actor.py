@@ -154,7 +154,10 @@ class DirAnnotatedShellActor(DirAnnotatedFuncActor):
                     raise ScriptError("failed", "script execution failed", ee)
 
             except ActorError as ae:
-                excres = tuple(port.annotation.msgtype(self.name, ae, None) for port in self.outports )
+                if len(self.outports) == 1:
+                    excres = self.outports.at(0).annotation.msgtype(self.name, ae, None)
+                else:
+                    excres = tuple(port.annotation.msgtype(self.name, ae, None) for port in self.outports )
                 return excres
 
             return self.postfunc(res)
