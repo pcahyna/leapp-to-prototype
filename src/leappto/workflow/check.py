@@ -139,8 +139,5 @@ class CheckWorkflow(object):
 
         connectactors(self._actors.values())
         workflow = self._actors['output_formatter'].get_workflow()
-        print(repr(self._actors['output_formatter'].outports.keys()))
-        print(repr(workflow.inports.keys()))
         ret_workflow = workflow(hostname=self.target_hostname)
-        print(repr(ret_workflow))
         print(ret_workflow['msg'].pop())
