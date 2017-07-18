@@ -1,2 +1,7 @@
 name   : has_docker
 script : has_docker.sh
+outports :
+    - docker_status
+inports :
+    - dummystart
+

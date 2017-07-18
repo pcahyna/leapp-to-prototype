@@ -1,3 +1,6 @@
 name     : rsync
 script   : rsync.sh
-requires : has_rsync
+inports  :
+    - has_rsync
+outports :
+    - rsync_exec_status

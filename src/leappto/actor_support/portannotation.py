@@ -1,4 +1,4 @@
-#from wowp.components import InPort
+from wowp.actors import DictionaryMerge
 
 class Any(object):
     """A unique wildcard object
@@ -33,6 +33,10 @@ class FinalPortAnnotation(PortAnnotation):
     def __init__(self):
         pass
 
+class InitialPortAnnotation(DstPortAnnotation):
+    def __init__(self):
+        pass
+
 #class AnnotatedInPort(InPort):
 #    def __init__(self, *args, **kwargs):
 #        super().__init__(*args, **kwargs)
@@ -41,7 +45,9 @@ class FinalPortAnnotation(PortAnnotation):
 def matchport(inport, outport):
     try:
         return (issubclass(outport.annotation.msgtype, inport.annotation.msgtype) and
-                (inport.annotation.srcname == Any or outport.owner.name == inport.annotation.srcname ))
+                (inport.annotation.srcname == Any or
+                 inport.annotation.srcname == All or
+                 outport.owner.name == inport.annotation.srcname ))
     except AttributeError:
         #print('Warning: no annotation in ', str(inport), " or ", str(outport))
         return False
@@ -61,6 +67,8 @@ class ActorError(Exception):
         self.errmsg = errmsg
         # more details: why it happened
         self.errdetails = errdetails
+    def __str__(self):
+        return "actor " + self.errtype + ": " + self.errmsg + " " + self.errdetails.__str__()
 
 def connectactors(actors):
     allinports=[p for a in actors for p in a.inports.values()]
@@ -68,20 +76,24 @@ def connectactors(actors):
 
     for ip in allinports:
         opcount = 0
-        if ip.annotation.msgtype==All:
+        if isinstance(ip.annotation, InitialPortAnnotation):
+            continue
+        
+        if ip.annotation.srcname==All:
             ip.annotation.matchports=[]
 
         for op in alloutports:
             if matchport(ip, op):
                 print("matched! ", ip)
                 opcount += 1
-                if ip.annotation.msgtype==All:
+                if ip.annotation.srcname==All:
+                    print("wildcard matched! ", ip)
                     ip.annotation.matchports.append(op)
                 else:
                     ip += op
                 # we do not want to have more than one output port connected to one input port
                 # break
-        if ip.annotation.msgtype == All:
+        if ip.annotation.srcname == All:
             names = [mp.name for mp in ip.annotation.matchports]
             ip.annotation.linkedactor = DictionaryMerge(inport_names=names, outport_name='out')
             ip += ip.annotation.linkedactor.outports['out']

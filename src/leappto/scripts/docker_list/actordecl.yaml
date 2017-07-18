@@ -1,3 +1,6 @@
 name     : docker_list
 script   : docker_list.sh
-requires : has_docker
+inports  :
+    - has_docker
+outports :
+    - docker_list_status

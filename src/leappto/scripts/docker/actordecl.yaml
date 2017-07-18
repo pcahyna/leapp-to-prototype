@@ -1,3 +1,6 @@
 name     : docker
 script   : docker.sh
-requires : has_docker
+inports  :
+    - has_docker
+outports :
+    - docker_exec_status

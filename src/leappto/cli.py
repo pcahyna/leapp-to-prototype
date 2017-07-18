@@ -15,7 +15,7 @@ from leappto.providers.ssh import SSHMachine
 from leappto.providers.local import LocalMachine
 from leappto.version import __version__
 from leappto.workflow.check import CheckWorkflow
-from leappto.workflow.actor import CheckActor, DirAnnotatedShellActor
+from leappto.workflow.actor import DirAnnotatedShellActor, DirAnnotatedFuncActor
 from sets import Set
 import os
 import sys
@@ -791,35 +791,30 @@ def main():
                             actor_script = os.path.join(actor_path,
                                                         actor['script'])
 
-                            """ FIXME
-                            if 'requires' in actor:
+                            if 'inports' in actor:
                                 wf.add_actor(DirAnnotatedShellActor(
-                                    actor_name,
+                                    name,
+                                    wf.get_exec_cmd(),
                                     actor_script,
-                                    inports = actor['requires']
+                                    inports = actor['inports'],
+                                    outports = actor['outports'],
+                                    name = actor_name
                                 ))
                             else:
                                 wf.add_actor(DirAnnotatedShellActor(
-                                    actor_name,
-                                    actor_script
+                                    name,
+                                    wf.get_exec_cmd(),
+                                    actor_script,
+                                    outports = actor['outports'],
+                                    name = actor_name
                                 ))
-                            """
                         else:
-                            pass
-                            """ FIXME
-                            if 'requires' in actor:
-                                wf.add_actor(DirAnnotatedFuncActor(
-                                    actor_name,
-                                    actor_script,
-                                    inports = actor['requires']
-                                ))
-                            else:
-                                wf.add_actor(DirAnnotatedFuncActor(
-                                    actor_name,
-                                    actor_script
-                                ))
-
-                            """
+                            wf.add_actor(DirAnnotatedFuncActor(
+                                name,
+                                inports = actor['inports'],
+                                outports = actor['outports'],
+                                name = actor_name
+                            ))
 
                     except yaml.YAMLError as e:
                         print(e)

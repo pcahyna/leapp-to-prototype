@@ -1,2 +1,6 @@
 name   : connectivity
 script : connectivity.sh
+outports :
+    - connectivity_status
+inports :
+    - dummystart

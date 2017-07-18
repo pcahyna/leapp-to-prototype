@@ -4,10 +4,11 @@ from __future__ import print_function
 
 import shlex
 from json import dumps
-from wowp.actors import FuncActor, DictionaryMerge
+#from wowp.actors import FuncActor, DictionaryMerge
 from leappto.providers.libvirt import LibvirtMachineProvider
-from leappto.workflow.actor import CheckActor
-
+from leappto.workflow.actor import AnnotatedFuncActor
+from leappto.actor_support.portannotation import connectactors, PortAnnotation, InitialPortAnnotation
+from leappto.msgtypes.msgtypes import Trigger
 
 class CheckWorkflow(object):
     """ Manage dependencies between actors and execute workflow """
@@ -77,7 +78,7 @@ class CheckWorkflow(object):
         ssh_opt = ['-o {}={}'.format(k, v) for k, v in settings.items()]
         return ssh_opt
 
-    def __get_exec_cmd(self):
+    def get_exec_cmd(self):
         """ Return command line that should be executed on target machine """
         local_sudo_cmd = "sudo bash"
         if self.is_local_machine:
@@ -92,19 +93,19 @@ class CheckWorkflow(object):
 
     def add_actor(self, actor):
         """ Add actor to workflow """
-        actor.set_target_cmd(self.__get_exec_cmd())
-        self._actors[actor.check_name] = actor
+        #actor.set_target_cmd(self.__get_exec_cmd())
+        self._actors[actor.name] = actor
 
     def run(self):
         """ Execute check workflow """
 
-        def start_workflow(hostname):
-            """ Simple function to trigger all other actors """
-            return hostname
+        #        def start_workflow(hostname):
+        #            """ Simple function to trigger all other actors """
+        #            return hostname
+        
+        #        start_actor = FuncActor(start_workflow, outports=['out'])
 
-        start_actor = FuncActor(start_workflow, outports=['out'])
-
-        input_dict = {}
+        """        input_dict = {}
         output_dict = {}
         for _, actor in self._actors.iteritems():
             for inport in actor.inports:
@@ -126,7 +127,20 @@ class CheckWorkflow(object):
 
         for actor, port in output_dict.iteritems():
             dict_actor.inports[port] += actor.outports[port]
+        """
 
-        workflow = dict_actor.get_workflow()
+        def start_workflow(hostname):
+            """ Simple function to trigger all other actors """
+            return Trigger()
+        
+        start_actor = AnnotatedFuncActor(outports_annotations={'out': PortAnnotation(Trigger)}, inports_annotations={'hostname': InitialPortAnnotation()}, func=start_workflow, outports=('out') )
+
+        self.add_actor(start_actor)
+
+        connectactors(self._actors.values())
+        workflow = self._actors['output_formatter'].get_workflow()
+        print(repr(self._actors['output_formatter'].outports.keys()))
+        print(repr(workflow.inports.keys()))
         ret_workflow = workflow(hostname=self.target_hostname)
-        print(dumps(ret_workflow['out'].pop(), indent=2))
+        print(repr(ret_workflow))
+        print(ret_workflow['msg'].pop())
