@@ -1,0 +1,8 @@
+{ 
+  "class":      "ClassC",
+  "superclass": "ClassB",
+  "attributes": {
+    "attrbE": 106,
+    "attrbF": "BarFoo" 
+  } 
+}

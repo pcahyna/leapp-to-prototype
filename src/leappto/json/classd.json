@@ -1,0 +1,7 @@
+{ 
+  "class":      "ClassD",
+  "superclass": "ClassX",
+  "attributes": {
+    "attrbX": "foo" 
+  } 
+}

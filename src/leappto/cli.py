@@ -16,6 +16,7 @@ from leappto.providers.local import LocalMachine
 from leappto.version import __version__
 from leappto.workflow.check import CheckWorkflow
 from leappto.workflow.actor import DirAnnotatedShellActor, DirAnnotatedFuncActor
+from leappto.actor_support.jsonclasses import JSONClassFactory
 from sets import Set
 import os
 import sys
@@ -820,6 +821,14 @@ def main():
                         print(e)
 
         wf.run()
+
+        jsons_path = os.path.join(leapp_path, 'json')
+        jsc = JSONClassFactory(jsons_path)
+        print(jsc.classes)
+        cobj = jsc.get_class('ClassC')
+        print(cobj.attrbA)
+        print(cobj.attrbF)
+
         sys.exit(0)
 
     elif parsed.action == 'destroy-container':

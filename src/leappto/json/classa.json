@@ -1,0 +1,7 @@
+{ 
+  "class":      "ClassA",
+  "attributes": {
+    "attrbA": 42,
+    "attrbB": "HelloWorld" 
+  } 
+}

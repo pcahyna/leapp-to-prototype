@@ -1,0 +1,8 @@
+{ 
+  "class":      "ClassB",
+  "superclass": "ClassA",
+  "attributes": {
+    "attrbC": 84,
+    "attrbD": "FooBar" 
+  } 
+}
