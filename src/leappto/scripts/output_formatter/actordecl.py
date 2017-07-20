@@ -10,9 +10,9 @@ def func(allstat):
     msg = '{'
     for m in allstat.values():
         if m.errorinfo == None:
-            msg += m.srcname + ':' + m.payload.__str__() + ',\n'
+            msg += m.srcname + ':' + str(m.payload) + ',\n'
         else:
-            msg += m.srcname + ':' + m.errorinfo.__str__() + ',\n'
+            msg += m.srcname + ':' + str(m.errorinfo) + ',\n'
 
     msg += '}'
     return msg
