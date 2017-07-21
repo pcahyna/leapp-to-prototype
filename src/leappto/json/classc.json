@@ -1,0 +1,9 @@
+{ 
+  "name": "ClassC",
+  "type": "object",
+  "superclass": "ClassB",
+  "properties": {
+    "attrbE": { "type": "integer" },
+    "attrbF": { "type": "string" }
+  } 
+}

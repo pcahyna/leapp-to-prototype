@@ -65,6 +65,7 @@ setup(
         "wowp",
         "ipyparallel",
         "pyyaml",
+        "jsonschema",
     ],
 
     # Extras:
@@ -77,7 +78,8 @@ setup(
 
     # No bundled package data yet
     package_data={'leappto': ['scripts/*/*.yaml',
-                              'scripts/*/*.sh']},
+                              'scripts/*/*.sh',
+                              'json/*.json']},
 
     # Install `leapp-tool` command
     entry_points={

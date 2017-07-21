@@ -1,0 +1,8 @@
+{ 
+  "name": "ClassA",
+  "type": "object",
+  "properties": {
+    "attrbA": { "type": "integer" },
+    "attrbB": { "type": "string" }
+  } 
+}

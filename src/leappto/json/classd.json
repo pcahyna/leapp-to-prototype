@@ -1,0 +1,8 @@
+{ 
+  "name": "ClassD",
+  "type": "object",
+  "superclass": "ClassX",
+  "properties": {
+    "attrbX": { "type": "string" }
+  } 
+}
