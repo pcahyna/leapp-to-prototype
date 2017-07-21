@@ -13,15 +13,20 @@ class JSONClassFactory(object):
         self.logger = logging.getLogger('JSONClassFactory')
         self.logger.setLevel(logging.DEBUG)
 
+        # FIXME: Current idea is to use a JSON Schema to define classes
+        # but we need to add 'superclass' to JSON Schema vocabulary to
+        # keep track of hierarchy. Also 'properties' are being ignored
+        # by now, it should be properly handled if necessity shows up
         self._schema = {
             'title': 'Class',
             'type': 'object',
             'properties': {
-                'class': {'type': 'string'},
+                'name': {'type': 'string'},
+                'type': {'type': 'string'},
                 'superclass': {'type': 'string'},
-                'attributes': {'type': 'object'}
+                'properties': {'type': 'object'}
             },
-            'required': ['class', 'attributes']
+            'required': ['name']
         }
 
         self._classes = {}
@@ -67,23 +72,19 @@ class JSONClassFactory(object):
 
     def _generate_class(self, data):
         """ Generate Class from data """
-        name = data[u'class'].encode('ascii')
+        name = data[u'name'].encode('ascii')
 
         superclass_name = None
         if u'superclass' in data:
             superclass_name = data[u'superclass'].encode('ascii')
 
-        attrs = {}
-        for attr in data[u'attributes'].keys():
-            attrs.update({attr.encode('ascii'): data[u'attributes'][attr]})
-
         if superclass_name:
             superclass = self.get_class(superclass_name)
             if superclass:
-                self._classes.update({name: type(name, (superclass,), attrs)})
+                self._classes.update({name: type(name, (superclass,), {})})
                 return
 
-        self._classes.update({name: type(name, (object,), attrs)})
+        self._classes.update({name: type(name, (object,), {})})
 
     def _generate_all_classes(self, classes_data):
         """ Generate all classes """
@@ -92,7 +93,7 @@ class JSONClassFactory(object):
             something_built = False
 
             for data in classes_data:
-                if data[u'class'].encode('ascii') in self.classes:
+                if data[u'name'].encode('ascii') in self.classes:
                     continue
 
                 if u'superclass' not in data:
@@ -105,7 +106,7 @@ class JSONClassFactory(object):
                     something_built = True
                     continue
 
-                pending.append(data[u'class'].encode('ascii'))
+                pending.append(data[u'name'].encode('ascii'))
 
             if not pending:
                 break

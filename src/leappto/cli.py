@@ -826,8 +826,7 @@ def main():
         jsc = JSONClassFactory(jsons_path)
         print(jsc.classes)
         cobj = jsc.get_class('ClassC')
-        print(cobj.attrbA)
-        print(cobj.attrbF)
+        print(cobj)
 
         sys.exit(0)
 

@@ -1,8 +1,9 @@
 { 
-  "class":      "ClassB",
+  "name": "ClassB",
+  "type": "object",
   "superclass": "ClassA",
-  "attributes": {
-    "attrbC": 84,
-    "attrbD": "FooBar" 
+  "properties": {
+    "attrbC": { "type": "integer" },
+    "attrbD": { "type": "string" }
   } 
 }

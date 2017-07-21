@@ -1,7 +1,8 @@
 { 
-  "class":      "ClassA",
-  "attributes": {
-    "attrbA": 42,
-    "attrbB": "HelloWorld" 
+  "name": "ClassA",
+  "type": "object",
+  "properties": {
+    "attrbA": { "type": "integer" },
+    "attrbB": { "type": "string" }
   } 
 }
