@@ -1,4 +1,3 @@
-script : has_rsync.sh
 outports:
     - rsyncstatus
 inports :

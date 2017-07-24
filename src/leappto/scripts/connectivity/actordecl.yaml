@@ -1,4 +1,3 @@
-script : connectivity.sh
 outports :
     - connectivity_status
 inports :

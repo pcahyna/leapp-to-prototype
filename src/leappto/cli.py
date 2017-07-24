@@ -26,6 +26,7 @@ import shlex
 import errno
 import psutil
 import yaml
+import glob
 
 
 VERSION='leapp-tool {0}'.format(__version__)
@@ -787,10 +788,20 @@ def main():
                 with open(yaml_file, 'r') as stream:
                     try:
                         actor = yaml.load(stream)
+                        actor_script = None
                         if 'script' in actor:
                             actor_script = os.path.join(actor_path,
                                                         actor['script'])
+                        else:
+                            # If no script was defined on yaml file and
+                            # there is only one .sh file on actor dir
+                            # use it as actor script
+                            script_list = glob.glob(os.path.join(actor_path,
+                                                                 '*.sh'))
+                            if len(script_list) == 1:
+                                actor_script = script_list.pop()
 
+                        if actor_script:
                             if 'inports' in actor:
                                 wf.add_actor(DirAnnotatedShellActor(
                                     actor_name,
