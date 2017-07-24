@@ -776,9 +776,9 @@ def main():
                            user=parsed.user,
                            identity=parsed.identity)
 
-        for name in os.listdir(os.path.join(scripts_path)):
-            if os.path.isdir(os.path.join(scripts_path, name)):
-                actor_path = os.path.join(scripts_path, name)
+        for actor_name in os.listdir(os.path.join(scripts_path)):
+            if os.path.isdir(os.path.join(scripts_path, actor_name)):
+                actor_path = os.path.join(scripts_path, actor_name)
                 yaml_file = os.path.join(actor_path, 'actordecl.yaml')
 
                 if not os.path.isfile(yaml_file):
@@ -787,14 +787,13 @@ def main():
                 with open(yaml_file, 'r') as stream:
                     try:
                         actor = yaml.load(stream)
-                        actor_name = actor['name']
                         if 'script' in actor:
                             actor_script = os.path.join(actor_path,
                                                         actor['script'])
 
                             if 'inports' in actor:
                                 wf.add_actor(DirAnnotatedShellActor(
-                                    name,
+                                    actor_name,
                                     wf.get_exec_cmd(),
                                     actor_script,
                                     inports = actor['inports'],
@@ -803,7 +802,7 @@ def main():
                                 ))
                             else:
                                 wf.add_actor(DirAnnotatedShellActor(
-                                    name,
+                                    actor_name,
                                     wf.get_exec_cmd(),
                                     actor_script,
                                     outports = actor['outports'],
@@ -811,7 +810,7 @@ def main():
                                 ))
                         else:
                             wf.add_actor(DirAnnotatedFuncActor(
-                                name,
+                                actor_name,
                                 inports = actor['inports'],
                                 outports = actor['outports'],
                                 name = actor_name

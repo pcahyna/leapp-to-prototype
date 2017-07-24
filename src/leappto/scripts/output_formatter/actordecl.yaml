@@ -1,4 +1,3 @@
-name   : output_formatter
 outports :
     - msg
 inports:

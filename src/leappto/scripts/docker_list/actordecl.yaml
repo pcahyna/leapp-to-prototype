@@ -1,4 +1,3 @@
-name     : docker_list
 script   : docker_list.sh
 inports  :
     - has_docker
