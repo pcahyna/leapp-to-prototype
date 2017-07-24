@@ -6,9 +6,8 @@ import os
 from importlib import import_module
 from subprocess import Popen, PIPE
 from wowp.actors import FuncActor
-import leappto.actor_support.portannotation
-from leappto.actor_support.portannotation import ActorError, MsgType
-from leappto.msgtypes.msgtypes import ShellCommandStatus
+from leappto.actor_support.portannotation import ActorError, MsgType, Any, DstPortAnnotation
+from leappto.msgtypes.msgtypes import ShellCommandStatus, Trigger
 
 class PrereqError(ActorError):
     def __init__(self, errmsg, prereqname, errdetails):
@@ -17,12 +16,20 @@ class PrereqError(ActorError):
 
 class ScriptError(ActorError):
     pass
-    
+
 class AnnotatedFuncActor(FuncActor):
     def __init__(self, outports_annotations, inports_annotations, func, args=(), kwargs={}, outports=None, inports=None, name=None):
+
+        if name and not inports:
+            # If no inport was defined via YAML file use the Trigger one
+            inports = ['default_in']
+            inports_annotations = {'default_in': DstPortAnnotation(Trigger, Any)}
+
         super(AnnotatedFuncActor, self).__init__(func, args, kwargs, outports=outports, inports=inports, name=name)
+
         for ipn in self.inports.keys():
             self.inports[ipn].annotation = inports_annotations[ipn]
+
         for opn in self.outports.keys():
             self.outports[opn].annotation = outports_annotations[opn]
 
@@ -51,9 +58,6 @@ class DirAnnotatedFuncActor(LoadedAnnotatedFuncActor):
         super(DirAnnotatedFuncActor, self).__init__(modname, func, args, kwargs, outports=outports, inports=inports, name=name)
         actor_path = os.path.dirname(os.path.abspath(self.annmodule.__file__))
 
-lfa = LoadedAnnotatedFuncActor('leappto.scripts.fooactor', lambda fooin: fooin, outports=('fooout'))
-dfa = DirAnnotatedFuncActor('baractor', lambda fooin: fooin, outports=('fooout'))
-
 class DirAnnotatedShellActor(DirAnnotatedFuncActor):
 
     def __init__(self, pkgname, target_cmd, script, args=(), kwargs={}, outports=None, inports=None, name=None):
@@ -78,7 +82,7 @@ class DirAnnotatedShellActor(DirAnnotatedFuncActor):
         self.prefunc = self._default_prefunc
         self.postfunc = self._default_postfunc
         self.script = script
- 
+
         super(DirAnnotatedShellActor, self).__init__(pkgname, allfunc, args, kwargs, outports, inports, name)
 
     def _default_prefunc(self, _, inportargs):

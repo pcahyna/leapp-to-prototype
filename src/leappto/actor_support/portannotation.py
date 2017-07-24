@@ -78,7 +78,7 @@ def connectactors(actors):
         opcount = 0
         if isinstance(ip.annotation, InitialPortAnnotation):
             continue
-        
+
         if ip.annotation.srcname==All:
             ip.annotation.matchports=[]
 

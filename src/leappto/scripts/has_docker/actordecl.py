@@ -2,5 +2,3 @@ from leappto.actor_support.portannotation import PortAnnotation, DstPortAnnotati
 from leappto.msgtypes.msgtypes import DockerStatus, DockerListStatus, Trigger
 
 outports_annotations = {'docker_status': PortAnnotation(DockerStatus)}
-
-inports_annotations = {'dummystart': DstPortAnnotation(Trigger, Any) }

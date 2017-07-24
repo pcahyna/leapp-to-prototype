@@ -1,4 +1,2 @@
 outports :
     - connectivity_status
-inports :
-    - dummystart

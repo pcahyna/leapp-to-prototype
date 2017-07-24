@@ -102,7 +102,6 @@ class CheckWorkflow(object):
         #        def start_workflow(hostname):
         #            """ Simple function to trigger all other actors """
         #            return hostname
-        
         #        start_actor = FuncActor(start_workflow, outports=['out'])
 
         """        input_dict = {}
@@ -132,7 +131,7 @@ class CheckWorkflow(object):
         def start_workflow(hostname):
             """ Simple function to trigger all other actors """
             return Trigger()
-        
+
         start_actor = AnnotatedFuncActor(outports_annotations={'out': PortAnnotation(Trigger)}, inports_annotations={'hostname': InitialPortAnnotation()}, func=start_workflow, outports=('out') )
 
         self.add_actor(start_actor)

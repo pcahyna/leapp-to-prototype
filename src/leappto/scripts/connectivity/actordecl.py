@@ -2,5 +2,3 @@ from leappto.actor_support.portannotation import PortAnnotation, DstPortAnnotati
 from leappto.msgtypes.msgtypes import ConnectivityStatus, Trigger
 
 outports_annotations = {'connectivity_status': PortAnnotation(ConnectivityStatus)}
-
-inports_annotations = {'dummystart': DstPortAnnotation(Trigger, Any) }

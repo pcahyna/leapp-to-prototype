@@ -1,5 +1,3 @@
 outports :
     - docker_status
-inports :
-    - dummystart
 
