@@ -21,12 +21,10 @@ class JSONClassFactory(object):
             'title': 'Class',
             'type': 'object',
             'properties': {
-                'name': {'type': 'string'},
                 'type': {'type': 'string'},
                 'superclass': {'type': 'string'},
                 'properties': {'type': 'object'}
-            },
-            'required': ['name']
+            }
         }
 
         self._classes = {}
@@ -43,7 +41,7 @@ class JSONClassFactory(object):
             else:
                 data = self._parse_json_file(os.path.join(dir_path, json_file))
                 if data:
-                    classes_data.append(data)
+                    classes_data.append((data, json_file))
 
         self._generate_all_classes(classes_data)
 
@@ -70,9 +68,8 @@ class JSONClassFactory(object):
 
             return class_data
 
-    def _generate_class(self, data):
+    def _generate_class(self, data, name):
         """ Generate Class from data """
-        name = data[u'name'].encode('ascii')
 
         superclass_name = None
         if u'superclass' in data:
@@ -92,8 +89,8 @@ class JSONClassFactory(object):
             pending = []
             something_built = False
 
-            for data in classes_data:
-                if data[u'name'].encode('ascii') in self.classes:
+            for data, name in classes_data:
+                if name in self.classes:
                     continue
 
                 if u'superclass' not in data:
@@ -106,7 +103,7 @@ class JSONClassFactory(object):
                     something_built = True
                     continue
 
-                pending.append(data[u'name'].encode('ascii'))
+                pending.append(name)
 
             if not pending:
                 break
