@@ -58,9 +58,10 @@ class DirAnnotatedFuncActor(LoadedAnnotatedFuncActor):
         super(DirAnnotatedFuncActor, self).__init__(modname, func, args, kwargs, outports=outports, inports=inports, name=name)
         actor_path = os.path.dirname(os.path.abspath(self.annmodule.__file__))
 
-class DirAnnotatedShellActor(DirAnnotatedFuncActor):
+class DirAnnotatedShellActor(AnnotatedFuncActor):
 
-    def __init__(self, pkgname, target_cmd, script, args=(), kwargs={}, outports=None, inports=None, name=None):
+    def __init__(self, outports_annotations, inports_annotations,
+                 target_cmd, script, args=(), kwargs={}, outports=None, inports=None, name=None):
         def allfunc(*inportargs):
             try:
                 preres = self.prefunc(self.inports, inportargs)
@@ -83,7 +84,9 @@ class DirAnnotatedShellActor(DirAnnotatedFuncActor):
         self.postfunc = self._default_postfunc
         self.script = script
 
-        super(DirAnnotatedShellActor, self).__init__(pkgname, allfunc, args, kwargs, outports, inports, name)
+        super(DirAnnotatedShellActor,
+              self).__init__(outports_annotations, inports_annotations,
+                             allfunc, args, kwargs, outports, inports, name)
 
     def _default_prefunc(self, _, inportargs):
         print ("prefunc:", self.name)
