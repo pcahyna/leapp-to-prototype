@@ -4,6 +4,7 @@ import json
 import logging
 import os
 from jsonschema import exceptions, validate
+from leappto.actor_support.portannotation import MsgType
 
 
 class JSONClassFactory(object):
@@ -81,7 +82,7 @@ class JSONClassFactory(object):
                 self._classes.update({name: type(name, (superclass,), {})})
                 return
 
-        self._classes.update({name: type(name, (object,), {})})
+        self._classes.update({name: type(name, (MsgType,), {})})
 
     def _generate_all_classes(self, classes_data):
         """ Generate all classes """
